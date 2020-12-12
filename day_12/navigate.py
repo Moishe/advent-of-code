@@ -3,18 +3,18 @@ import numpy
 import pathlib
 import re
 
-f = open(pathlib.Path(__file__).parent.absolute() / 'test_input.txt')
+f = open(pathlib.Path(__file__).parent.absolute() / 'input.txt')
 
 directions = {
-    'N': [0, -1],
-    'S': [0, 1],
+    'N': [0, 1],
+    'S': [0, -1],
     'E': [1, 0],
     'W': [-1, 0]
 }
 
 rotations = {
-    'R': 90,
-    'L': -90,
+    'R': -1,
+    'L': 1,
 }
 
 current_direction = directions['E']
@@ -34,12 +34,14 @@ for l in f:
     action = g.group(1)
     distance = int(g.group(2))
 
+    print("Position:  %s" % position)
+    print("Direction: %s" % current_direction)
     print("%s: %d" % (action, distance))
 
     vector = [0,0]
     if action in rotations:
-        current_direction = rotate(action, distance, current_direction)
-        print("New direction: %s" % current_direction)
+        current_direction = rotate(action, rotations[action] * distance, current_direction)
+        continue
     elif action in directions:
         vector = numpy.multiply(distance, directions[action])
     elif action == 'F':
@@ -48,4 +50,5 @@ for l in f:
     print("Moving %s" % vector)
     position = numpy.add(position, vector)
 
-    print("New position: %s" % position)
+print("New position: %s" % position)
+print("Sum: %d" % (sum([abs(x) for x in position])))
