@@ -55,6 +55,7 @@ def all_neighbors(board_set):
     neighbor_set = set()
     for cell in list(board_set):
         neighbor_set.update(cell_neighbors(cell))
+        neighbor_set.add(cell)
     return neighbor_set
 
 def generation(board_set):
