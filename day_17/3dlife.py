@@ -1,3 +1,4 @@
+import time
 
 xlat = {
     True: '#',
@@ -82,7 +83,7 @@ def print_board(board_set):
             for row in z_slice:
                 print("    %s" % ''.join(row))
 
-board = set_from_2d_grid([
+test_board = set_from_2d_grid([
     '.#.',
     '..#',
     '###',
@@ -99,10 +100,12 @@ board = set_from_2d_grid([
     '..#..##.'   
 ])
 
-print(board)
-for i in range(6):
-    print("generation: %d" % (i + 1))
+for i in range(15):
+    start = time.time()
+    #print("generation: %d" % (i + 1))
     board = generation(board)
+    end = time.time()
+    print("After %d generations: on: %d, duration: %s" % (i + 1, len(board), "{:.2f}".format(end - start)))
     #print_board(board)
 
 print("On cells: %d" % len(board))
