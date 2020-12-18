@@ -2,8 +2,6 @@ import enum
 import pathlib
 import re
 
-input = '3 * 4 + 1 * (2 + 3)'
-
 class TokenType(enum.Enum):
     TOKEN_NUM = 0
     TOKEN_PLUS = 1
@@ -30,7 +28,6 @@ fn_map = {
     TokenType.TOKEN_PLUS: add_values,
     TokenType.TOKEN_MULT: mult_values,
 }
-
 
 token_operators = [TokenType.TOKEN_PLUS, TokenType.TOKEN_MULT]
 
@@ -106,6 +103,8 @@ def parse(tokens, depth=0):
         return tokens[0]
 
     if tokens[1].token in token_operators:
+        # the two clauses here are very close to being duplicated and could certainly
+        # be compressed. :shrug:
         if tokens[1].token == TokenType.TOKEN_PLUS and tokens[0].token in token_operators and not tokens[0].parens:
             if tokens[0].parens:
                 print("This token has parens")
@@ -156,10 +155,10 @@ def compute(ast):
     return fn_map[ast.token](compute(ast.children[0]), compute(ast.children[1]))
 
 inputs = [
-#    '(3 * 2) + 5'
-#    '2 * 3 + (4 * 5)',
-#    '5 + (8 * 3 + 9 + 3 * 4 * 3)',
-#    '5 * 9 * (7 * 3 * 3 + 9 * 3 + (8 + 6 * 4))',
+    '(3 * 2) + 5'
+    '2 * 3 + (4 * 5)',
+    '5 + (8 * 3 + 9 + 3 * 4 * 3)',
+    '5 * 9 * (7 * 3 * 3 + 9 * 3 + (8 + 6 * 4))',
     '((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6) + 2 + 4 * 2',
 ]
 
