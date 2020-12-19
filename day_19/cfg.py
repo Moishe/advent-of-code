@@ -56,46 +56,21 @@ def expand_rule(rule, rule_idx, rule_map):
         return new_rule[0][0]
     return new_rule
 
-clause_count = 0
-clauses_with_recursion = []
-def ruleset_to_regex(ruleset):
-    global clause_count, clauses_with_recursion
-    print("Parsing: %s" % (ruleset))
-    regex_clauses = []
-    for clause in ruleset:
-        next_el_plus = False
-        regex = ""
-        for el in clause:
-            if type(el) is list:
-                regex += ruleset_to_regex(el)
-            elif el == '[!]':
-                regex += '+'
-                next_el_plus = True
-                clauses_with_recursion.append(clause_count)
-            else:
-                regex += el
-                if next_el_plus:
-                    regex += '+'
-                    next_el_plus = False
-        clause_count += 1
-        regex_clauses.append(regex)
-
-    return "(" + "|".join(regex_clauses) + ")"
-
-def match(s, ruleset):
-    print("Trying to match %s to %s" % (s, ruleset))
+def match(s, ruleset, parent, depth=0):
+    print("%s Trying to match %s to %s" % (' ' * depth, s, ruleset))
     idx = 0
     matches = False
-    for el in ruleset:
-        print("%s / %s" % (el,s[idx]))
-        if type(el) == list:
-            print("It's an or clause, checking %s" % el)
-            matches |= match(s[idx:], el)
-        else:
-            print("It's a sequence of characters, checking %s" % el)
+    if type(ruleset[0]) == list:
+        for el in ruleset:
+            print("%s OR %s / %s" % (' ' * depth, el,s))
+            matches |= match(s[idx:], el, ruleset, depth + 1)
+    else:
+        for el in ruleset:
+            print("%s AND %s / %s" % (' ' * depth, el,s[idx]))
+
             if el == '[!]':
-                print("Recursing")
-                if not match(s[idx:], ruleset):
+                print("%s Recursing" % (' ' * depth))
+                if not match(s[idx:], parent, None, depth + 1):
                     return False
                 #print("felt recursive, might delete later %s, %s, %s" % (m, s[idx:], ruleset))
                 # not sure what to *do* with this
@@ -120,23 +95,8 @@ print(json.dumps(rule_map, indent=1))
 expanded_ruleset = expand_rule(rule_map[0], 0, rule_map)
 print(expanded_ruleset)
 
-print(match('bbaaa', expanded_ruleset))
+print(match('bbaaa', expanded_ruleset, None))
 exit(1)
-regex = "^" + ruleset_to_regex(expanded_ruleset) + "$"
-print(regex)
 
 f = open(pathlib.Path(__file__).parent.absolute() / 'testlines.txt')
 testlines = [x.rstrip() for x in f.readlines()]
-
-#testlines = ['bbaaa', 'babaa', 'bbbaaaa']
-matches = 0
-print(clauses_with_recursion)
-for line in testlines:
-    m = re.match(regex, line)
-    if m:
-        matches += 1
- #       print("%s matches (%s)" % (line, [str(x) for x in m.groups()]))
- #   else:
- #       print("%s does not match" % line)
-
-print("%d match" % matches)

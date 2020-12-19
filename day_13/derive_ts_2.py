@@ -15,12 +15,12 @@ for o in offsets:
     print("At a multiple of %d I need a remainder of %d" % indexed_offsets[-1])
   i += 1
 
-print(indexed_offsets)
 indexed_offsets.reverse()
 
 product = 1
 for x in indexed_offsets:
   product *= x[0]
+
 print("Product: %d" % product)
 print(indexed_offsets)
 multiplier = 1
