@@ -78,10 +78,12 @@ def match_2(s, idx, ruleset, depth=0):
     local_ruleset = ruleset.copy()
     operation = local_ruleset.pop(0)
     if operation == 'or':
+        candidates = []
         for el in local_ruleset:
             debug_print("%s Checking: %s %s" % (' ' * depth, el, s))
             if type(el) is str:
                 if el == s[idx]:
+                    # now recurse from here                    
                     return (True, idx + 1)
             elif type(el) is int:
                 print("Okay I dunno now")
@@ -89,8 +91,14 @@ def match_2(s, idx, ruleset, depth=0):
             else:
                 (new_match, new_idx) = match_2(s, idx, el, depth + 1)
                 if new_match:
-                    return (True, new_idx)
-        return (matches, idx)
+                    candidates.append(new_idx)
+        
+        if candidates:
+            #if len(candidates) > 1:
+                #print("%s candidates: %s" % (' ' * depth, candidates))
+            return (True, min(candidates))
+        else:
+            return (False, 0)
     else:
         for el in local_ruleset:
             if type(el) is str:
@@ -101,9 +109,9 @@ def match_2(s, idx, ruleset, depth=0):
                     return (False, idx)
                 idx += 1
             elif type(el) is int:
-                print("Recursing: %d" % (idx))
+                print("%s Recursing: %d" % (' ' * depth, idx))
                 (new_match, new_idx) = match_2(s, idx, expanded_ruleset[el], depth + 1)
-                print("Done recursing: %s: %d,%d" % (new_match, new_idx, idx))
+                print("%s Done recursing: %s: %d,%d" % (' ' * depth, new_match, new_idx, idx))
                 if not new_match:
                     debug_print("%s Matches (%s, %s)" % (' ' * depth, False, el))
                     return (False, idx)
@@ -129,15 +137,44 @@ testlines = [
 """
 f = open(pathlib.Path(__file__).parent.absolute() / 'test-rules.txt')
 input = [x.rstrip() for x in f.readlines()]
+"""
+input = [
+    '0: 1 2 | 1 2 0',
+    '1: "a"',
+    '2: "b"'
+]
+"""
+input = [
+    '0: 1 2 | 1 0 2',
+    '1: "a"',
+    '2: "b"',
+]
 
 f = open(pathlib.Path(__file__).parent.absolute() / 'test-lines.txt')
 testlines = [x.rstrip() for x in f.readlines()]
 
+#testlines = [
+#    'babbbbaabbbbbabbbbbbaabaaabaaa'
+#]
+"""
 testlines = [
-    'babbbbaabbbbbabbbbbbaabaaabaaa'
+    'abab',
+    'ababab',
+]
+"""
+testlines = [
+    'ab',
+    'aabb',
+    'aaabbb'
 ]
 
 rule_map = {}
+
+def print_simplified_ruleset(idx):
+    global expanded_ruleset
+    global rule_map
+    print("%d: %s" % (idx, rule_map[idx]))
+    print("%d: %s" % (idx, expanded_ruleset[idx]))
 
 for line in input:
     m = re.match(r'^([0-9]+): (.+)$', line)
@@ -147,6 +184,9 @@ for line in input:
 expanded_ruleset = defaultdict(list)
 for (idx, rule) in rule_map.items():
     expanded_ruleset[idx] = expand_rule(rule, 0, rule_map)
+
+for idx in sorted(expanded_ruleset.keys()):
+    print_simplified_ruleset(idx)
 
 total = 0
 for testline in testlines:
